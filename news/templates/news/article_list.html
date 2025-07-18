@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+  <!-- 🔍 Search Bar -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <form class="d-flex" method="GET" action=".">
+        <input name="q" class="form-control me-2" placeholder="Search…" value="{{ search_query }}">
+        {% if current_category and current_category != 'All' %}
+          <input type="hidden" name="category" value="{{ current_category }}">
+        {% endif %}
+        <button class="btn btn-outline-success">Search</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📂 Category Filters -->
+  <div class="row mb-4">
+    <div class="col">
+      <a href="." class="btn btn-sm {% if current_category == 'All' %}btn-primary{% else %}btn-outline-secondary{% endif %} me-2">All Articles</a>
+      {% for category in categories %}
+        <a href="?category={{ category.name }}{% if search_query %}&q={{ search_query }}{% endif %}"
+           class="btn btn-sm {% if current_category == category.name %}btn-primary{% else %}btn-outline-secondary{% endif %} me-2">
+          {{ category.name }} ({{ category.article_count }})
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 📰 Article Cards -->
+  <div class="row">
+    {% for article in articles %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">{{ article.title }}</h5>
+            <p class="card-text">
+              {% if article.summary %}
+                {{ article.summary|truncatewords:25 }}
+              {% else %}
+                {{ article.content|truncatewords:25 }}
+              {% endif %}
+            </p>
+            <a href="{% url 'news:article_detail' article.pk %}" class="btn btn-outline-primary">Read More</a>
+          </div>
+          <div class="card-footer text-muted small">
+            {{ article.published_date|date:"M d, Y" }}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col">
+        <p>No articles found.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- 📄 Pagination -->
+  {% if is_paginated %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category != 'All' %}&category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Previous</a>
+          </li>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+          {% if num == page_obj.number %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num >= page_obj.number|add:"-3" and num <= page_obj.number|add:"3" %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}{% if current_category != 'All' %}&category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category != 'All' %}&category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Next</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

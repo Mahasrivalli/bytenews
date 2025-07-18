@@ -1,0 +1,11 @@
+.card-title {
+    font-weight: 600;
+    color: #003366;
+}
+.card-text {
+    font-size: 0.95rem;
+    color: #555;
+}
+.btn.active {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
+}

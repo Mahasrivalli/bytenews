@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="container content">
+    <h1>Welcome to NewsGeni AI</h1>
+    <p>Your personalized AI-powered news assistant</p>
+    <a href="{% url 'news:article_list' %}" class="btn btn-outline-light mt-4">Browse Articles</a>
+  </div>
+</div>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <h4>Smart Recommendations</h4>
+          <p>Get news tailored to your interests using AI and machine learning.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <h4>Real-time Updates</h4>
+          <p>Stay informed with breaking stories and trusted sources.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <h4>Easy Navigation</h4>
+          <p>Filter news by category, search topics, and read with ease.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

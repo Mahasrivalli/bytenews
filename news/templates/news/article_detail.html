@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">{{ article.title }}</h2>
+      <p class="text-muted">Published on {{ article.published_date|date:"M d, Y" }}</p>
+
+      {% if article.source %}
+        <p><strong>Source:</strong> {{ article.source }}</p>
+      {% endif %}
+
+      <p>{{ article.content }}</p>
+
+      {% if article.audio_file %}
+        <div class="mt-4">
+          <h6>Listen to this article:</h6>
+          <audio controls class="w-100">
+            <source src="{{ article.audio_file.url }}" type="audio/mpeg">
+            Your browser doesn't support the audio element.
+          </audio>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{% url 'news:article_list' %}" class="btn btn-outline-secondary">&larr; Back to Articles</a>
+  </div>
+</div>
+{% endblock %}

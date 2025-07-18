@@ -1,0 +1,11 @@
+Django
+beautifulsoup4
+requests
+gTTS
+pandas
+python-decouple
+feedparser
+lxml
+Pillow
+feedparser 
+lxml
