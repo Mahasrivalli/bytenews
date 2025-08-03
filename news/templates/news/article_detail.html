@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">{{ article.title }}</h2>
+      <p class="text-muted">Published on {{ article.published_date|date:"M d, Y" }}</p>
+
+      {% if article.source %}
+        <p><strong>Source:</strong> {{ article.source }}</p>
+      {% endif %}
+
+      {% if article.author and article.author != 'Unknown' %}
+        <p><strong>Author:</strong> {{ article.author }}</p>
+      {% endif %}
+
+      <p>{{ article.content }}</p>
+
+      <!-- 🎧 Audio Player -->
+      <div id="audioPlayerContainer" class="mt-4">
+        {% if article.audio_file %}
+          <h6>🎧 Listen to this article:</h6>
+          <audio id="audioPlayer" controls class="w-100">
+            <source src="{{ article.audio_file.url }}" type="audio/mpeg">
+            Your browser doesn't support the audio element.
+          </audio>
+        {% else %}
+          <p id="audioStatus">Audio summary not yet generated.</p>
+          {% if user.is_authenticated %}
+            <button id="generateAudioBtn" class="btn btn-outline-primary btn-sm mt-2"
+              data-article-id="{{ article.pk }}">
+              🎤 Generate Audio Summary
+            </button>
+          {% endif %}
+        {% endif %}
+        <!-- Bootstrap spinner -->
+        <div id="loadingSpinner" class="spinner-border text-primary mt-2" role="status" style="display: none;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📝 Summary Section -->
+{% url 'news:submit_summary_feedback' article.pk %}
+    <div class="card mt-4 border-info">
+      <div class="card-header bg-info text-white">
+        <strong>📝 Article Summary</strong>
+      </div>
+      <div class="card-body">
+        <p class="card-text">{{ article.summary }}</p>
+
+        <!-- 👍👎 Feedback Buttons -->
+        {% if user.is_authenticated %}
+         <form method="POST" action="{% url 'news:submit_summary_feedback' article.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="feedback" value="helpful" class="btn btn-success btn-sm me-2">
+              👍 Helpful ({{ article.summary_helpful }})
+            </button>
+            <button type="submit" name="feedback" value="not_helpful" class="btn btn-danger btn-sm">
+              👎 Not Helpful ({{ article.summary_not_helpful }})
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+ 
+
+  <!-- 🔁 Regenerate Summary + Audio -->
+  {% if user.is_authenticated %}
+    <div class="mt-3 d-flex gap-2">
+      <a href="{% url 'news:generate_summary' article.pk %}" class="btn btn-outline-info">
+        🔁 Generate Summary Now
+      </a>
+      {% if not article.audio_file %}
+        <a href="{% url 'news:generate_audio' article.pk %}" class="btn btn-outline-primary">
+          🎤 Generate Audio
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- ✅ Approve Article -->
+  {% if user.is_staff and not article.approved %}
+    <form method="POST" action="{% url 'news:approve_article' article.pk %}" class="mt-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success">
+        ✅ Approve This Article
+      </button>
+    </form>
+  {% endif %}
+
+  <!-- 🔙 Back Link -->
+  <div class="mt-4">
+    <a href="{% url 'news:article_list' %}" class="btn btn-outline-secondary">
+      &larr; Back to Articles
+    </a>
+  </div>
+</div>
+
+<!-- ✅ AJAX for Generate Audio -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const generateAudioBtn = document.getElementById('generateAudioBtn');
+    const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+    const audioStatus = document.getElementById('audioStatus');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    if (generateAudioBtn) {
+      generateAudioBtn.addEventListener('click', function () {
+        const articleId = this.dataset.articleId;
+        audioStatus.textContent = 'Generating audio... Please wait.';
+        generateAudioBtn.disabled = true;
+        loadingSpinner.style.display = 'block';
+
+        fetch(`/news/article/${articleId}/generate_audio_ajax/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          loadingSpinner.style.display = 'none';
+
+          if (data.status === 'success') {
+            audioStatus.textContent = 'Audio summary ready!';
+            const newAudioPlayer = document.createElement('audio');
+            newAudioPlayer.id = 'audioPlayer';
+            newAudioPlayer.controls = true;
+            newAudioPlayer.className = 'w-100';
+
+            const source = document.createElement('source');
+            source.src = data.audio_url;
+            source.type = 'audio/mpeg';
+            newAudioPlayer.appendChild(source);
+
+            audioPlayerContainer.innerHTML = '';
+            audioPlayerContainer.appendChild(newAudioPlayer);
+            newAudioPlayer.load();
+            newAudioPlayer.play();
+          } else {
+            audioStatus.textContent = `Error: ${data.message}`;
+            generateAudioBtn.disabled = false;
+          }
+        })
+        .catch(error => {
+          console.error('Fetch error:', error);
+          audioStatus.textContent = 'Failed to generate audio. Please try again.';
+          loadingSpinner.style.display = 'none';
+          generateAudioBtn.disabled = false;
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

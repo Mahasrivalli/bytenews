@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/history.css' %}">
+
+<div class="container mt-5">
+  <h3>Your Reading History</h3>
+  <ul class="list-group">
+    {% for entry in history %}
+      <li class="list-group-item">
+        <a href="{% url 'news:article_detail' entry.article.pk %}">{{ entry.article.title }}</a>
+        <br><small class="text-muted">Read at: {{ entry.read_at|date:"M d, Y H:i" }}</small>
+      </li>
+    {% empty %}
+      <li class="list-group-item">You haven’t read any articles yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preferences{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/preferences.css' %}">
+
+<div class="container mt-4">
+    <h2>Select Your Preferred News Categories</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-success">Save</button>
+    </form>
+</div>
+{% endblock %}

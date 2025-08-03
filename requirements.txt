@@ -1,0 +1,15 @@
+Django
+beautifulsoup4
+requests
+gTTS
+pandas
+python-decouple
+feedparser
+lxml
+Pillow
+feedparser 
+lxml
+nltk
+djangorestframework
+django-debug-toolbar
+newspaper3k
